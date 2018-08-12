@@ -55,20 +55,35 @@ def stand_regression(x_arr, y_arr):
 def run():
     x_arr, y_arr = load_data_set("./data/ex0.txt")
     ws = stand_regression(x_arr, y_arr)
-    print("权重值:", ws)
+    print("权重值:\n", ws)
     x_mat = np.mat(x_arr)
     y_mat = np.mat(y_arr)
 
     # 画图
     fig = plt.figure()
     ax = fig.add_subplot(111)
+    # matrix.A  中的 A ：array
+    # 表示将矩阵 matrix转换为二维数组
+    # matrix.A[0] :取二维数组中第一行元素
     ax.scatter(x_mat[:, 1].flatten().A[0], y_mat.T[:, 0].flatten().A[0])
 
     x_copy = x_mat.copy()
+    # 排序的目的是为了在plot中可以使用
     x_copy.sort(0)
-    y_hat = x_copy * ws
+    y_hat = x_copy * ws  # 预测结果
     ax.plot(x_copy[:, 1], y_hat)
     plt.show()
+
+    print("y_hat的维数:\n", np.shape(y_hat))
+    print("y_hat.T的维数:\n", np.shape(y_hat.T))
+    print("y_mat的维数:\n", np.shape(y_mat))
+
+    # 预测值与真实值的相关系数,这里的输出是个矩阵
+    # results[i][j]表示第i个随机变量与第j个随机变量的相关系数.
+    corr = np.corrcoef(y_hat.T, y_mat)
+    print("相关系数:\n", corr)
+    # 与corr的结果相同
+    print(np.corrcoef(y_mat, y_hat.T))
 
 
 if __name__ == '__main__':
