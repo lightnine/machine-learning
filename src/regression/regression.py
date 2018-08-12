@@ -74,16 +74,18 @@ def run():
     ax.plot(x_copy[:, 1], y_hat)
     plt.show()
 
-    print("y_hat的维数:\n", np.shape(y_hat))
-    print("y_hat.T的维数:\n", np.shape(y_hat.T))
+    # 因为y_hat是经过排序后计算得到,所以这里使用x_mat重新计算预测结果
+    y_pre = x_mat * ws
+    print("y_hat的维数:\n", np.shape(y_pre))
+    print("y_hat.T的维数:\n", np.shape(y_pre.T))
     print("y_mat的维数:\n", np.shape(y_mat))
 
     # 预测值与真实值的相关系数,这里的输出是个矩阵
     # results[i][j]表示第i个随机变量与第j个随机变量的相关系数.
-    corr = np.corrcoef(y_hat.T, y_mat)
+    corr = np.corrcoef(y_pre.T, y_mat)
     print("相关系数:\n", corr)
     # 与corr的结果相同
-    print(np.corrcoef(y_mat, y_hat.T))
+    print(np.corrcoef(y_mat, y_pre.T))
 
 
 if __name__ == '__main__':
