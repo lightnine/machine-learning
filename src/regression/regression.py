@@ -34,7 +34,7 @@ def load_data_set(filename):
     return data_mat, label_mat
 
 
-def stand_regression(x_arr, y_arr):
+def standard_regression(x_arr, y_arr):
     """
     这里直接采用代数解直接求取权重大小.这里有个条件是xTx的逆必须存在,
     如果不存在,则直接返回
@@ -54,7 +54,7 @@ def stand_regression(x_arr, y_arr):
 
 def run():
     x_arr, y_arr = load_data_set("./data/ex0.txt")
-    ws = stand_regression(x_arr, y_arr)
+    ws = standard_regression(x_arr, y_arr)
     print("权重值:\n", ws)
     x_mat = np.mat(x_arr)
     y_mat = np.mat(y_arr)
