@@ -14,7 +14,6 @@
 """
 from random import seed
 from random import randrange
-from csv import reader
 from math import sqrt
 from itertools import islice
 
@@ -28,13 +27,6 @@ def load_csv(filename):
         row_list = list(row.split(";"))
         dataset.append(row_list)
     input_file.close()
-
-    # with open(filename, 'r') as file:
-    #     csv_reader = reader(file)
-    #     for row in csv_reader:
-    #         if not row:
-    #             continue
-    #         dataset.append(row)
     return dataset
 
 
@@ -112,7 +104,7 @@ def rmse_metric(actual, predicted):
 
 def evaluate_algorithm(dataset, algorithm, n_folds, *args):
     """
-    fixme?
+    评估算法
     :param dataset:
     :param algorithm:
     :param n_folds:
@@ -122,7 +114,7 @@ def evaluate_algorithm(dataset, algorithm, n_folds, *args):
     folds = cross_validation_split(dataset, n_folds)
     scores = list()  # 每一个样本的损失值
     for fold in folds:
-        train_set = list(folds)
+        train_set = list(folds)  # 这是根据folds创建新的folds,相当于克隆
         train_set.remove(fold)
         train_set = sum(train_set, [])
         test_set = list()
