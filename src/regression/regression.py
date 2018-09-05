@@ -83,8 +83,8 @@ def lwlr_test(test_arr, x_arr, y_arr, k=1.0):
     """
     测试局部线性回归
     :param test_arr:所有的待测试数据,一行表示一个待测试数据
-    :param x_arr:
-    :param y_arr:
+    :param x_arr: 训练数据
+    :param y_arr: 训练数据回归值
     :param k:
     :return:返回每一行待测试数据的预测值
     """
@@ -94,6 +94,115 @@ def lwlr_test(test_arr, x_arr, y_arr, k=1.0):
     for i in range(m):
         y_hat[i] = lwlr(test_arr[i], x_arr, y_arr, k)
     return y_hat
+
+
+def rss_error(y_arr, y_hat_arr):
+    """
+    计算误差(方差)
+    :param y_arr: 真实值
+    :param y_hat_arr: 预测值
+    :return:
+    """
+    return ((y_arr - y_hat_arr) ** 2).sum()
+
+
+def ridge_regression(x_mat, y_mat, lam=0.2):
+    """
+    岭回归算法,直接采用公式进行计算
+    :param x_mat:
+    :param y_mat:
+    :param lam: lambda值
+    :return: 岭回归算法的权重
+    """
+    xTx = x_mat.T * x_mat
+    denom = xTx + lam * np.eye(np.shape(x_mat)[1])
+    if np.linalg.det(denom) == 0.0:
+        print("矩阵不可逆，无法进行岭回归算法的计算")
+        return
+    ws = denom.I * (x_mat.T * y_mat)
+    return ws
+
+
+def ridge_test(x_arr, y_arr):
+    """
+    对于不同的lambda进行岭回归的计算
+    :param x_arr:
+    :param y_arr:
+    :return:
+    """
+    x_mat = np.mat(x_arr)
+    y_mat = np.mat(y_arr).T
+    # 归一化
+    y_mean = np.mean(y_mat, 0)
+    y_mat = y_mat - y_mean
+    x_means = np.mean(x_mat, 0)
+    x_var = np.var(x_mat, 0)
+    x_mat = (x_mat - x_means) / x_var
+    num_test_pts = 30  # 控制有多少个lambda
+    w_mat = np.zeros((num_test_pts, np.shape(x_mat)[1]))
+    # 保存log(lambda)的值
+    log_lam_mat = np.zeros((1, 30))
+    # 求出每个lambda对应的岭回归权重值
+    for i in range(num_test_pts):
+        ws = ridge_regression(x_mat, y_mat, np.exp(i - 10))
+        w_mat[i, :] = ws.T
+        log_lam_mat[:, i] = i - 10
+    return w_mat, log_lam_mat
+
+
+def run_ridge():
+    ab_x, ab_y = load_data_set('./data/abalone.txt')
+    ridge_weights, log_lam_mat = ridge_test(ab_x, ab_y)
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    # 这里为了正确显示x坐标，所以进行了如下处理，也可以直接画出ridge_weights
+    for i in range(np.shape(ridge_weights)[1]):
+        ax.plot(log_lam_mat.T, ridge_weights[:, i])
+    # ax.plot(ridge_weights)
+    ax.set_xlim(-10, 20)
+    ax.set_ylim(-1.0, 2.5)
+    ax.set_xlabel(r'log($\lambda$)')
+    ax.set_ylabel("w")
+
+    # ax = fig.add_subplot(122)
+    # ax.plot(ridge_weights)
+    plt.show()
+
+
+def run_abalone():
+    """
+    采用abalone数据集，使用局部线性回归算法预测鲍鱼的年龄
+    这里的数据已经经过处理，条数：4177条
+    数据集网址：https://archive.ics.uci.edu/ml/datasets/abalone
+    :return:
+    """
+    ab_x, ab_y = load_data_set('./data/abalone.txt')
+    y_hat_01 = lwlr_test(ab_x[0:99], ab_x[0:99], ab_y[0:99], 0.1)
+    y_hat_1 = lwlr_test(ab_x[0:99], ab_x[0:99], ab_y[0:99], 1)
+    y_hat_10 = lwlr_test(ab_x[0:99], ab_x[0:99], ab_y[0:99], 10)
+    error01 = rss_error(ab_y[0:99], y_hat_01.T)
+    error1 = rss_error(ab_y[0:99], y_hat_1.T)
+    error10 = rss_error(ab_y[0:99], y_hat_10.T)
+    print("k取0.1时的，采用局部加权算法的误差为：", error01)
+    print("k取1时的，采用局部加权算法的误差为：", error1)
+    print("k取10时的，采用局部加权算法的误差为：", error10)
+
+    # 对于新数据的预测能力，这里是为了查看k值对于过拟合的影响
+    y_hat_new_01 = lwlr_test(ab_x[100:199], ab_x[0:99], ab_y[0:99], 0.1)  # 新数据为ab_x[100:199]
+    y_hat_new_1 = lwlr_test(ab_x[100:199], ab_x[0:99], ab_y[0:99], 1)
+    y_hat_new_10 = lwlr_test(ab_x[100:199], ab_x[0:99], ab_y[0:99], 10)
+    error_new_01 = rss_error(ab_y[100:199], y_hat_new_01.T)
+    error_new_1 = rss_error(ab_y[100:199], y_hat_new_1.T)
+    error_new_10 = rss_error(ab_y[100:199], y_hat_new_10.T)
+    print("k取0.1时，局部加权算法对于新数据的误差为：", error_new_01)
+    print("k取1时，局部加权算法对于新数据的误差为：", error_new_1)
+    print("k取10时，局部加权算法对于新数据的误差为：", error_new_10)
+
+    # 标准线性回归
+    ws = standard_regression(ab_x[0:99], ab_y[0:99])
+    y_hat = np.mat(ab_x[100:199]) * ws
+    error_stand = rss_error(ab_y[100:199], y_hat.T.A)  # A表示将矩阵转为数组
+    print("标准线性回归算法对于新数据的误差：", error_stand)
 
 
 def run_lwlr():
@@ -180,4 +289,8 @@ if __name__ == '__main__':
     # 线性回归算法
     # run()
     # 局部线性回归
-    run_lwlr()
+    # run_lwlr()
+    # 预测鲍鱼的年龄
+    # run_abalone()
+    # ridge算法
+    run_ridge()
