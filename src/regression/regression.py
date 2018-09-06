@@ -154,19 +154,23 @@ def run_ridge():
     ab_x, ab_y = load_data_set('./data/abalone.txt')
     ridge_weights, log_lam_mat = ridge_test(ab_x, ab_y)
     fig = plt.figure()
-    ax = fig.add_subplot(111)
+    # ax = fig.add_subplot(111)
     # 这里为了正确显示x坐标，所以进行了如下处理，也可以直接画出ridge_weights
     for i in range(np.shape(ridge_weights)[1]):
-        ax.plot(log_lam_mat.T, ridge_weights[:, i])
+        label_name = "w" + str(i+1)
+        plt.plot(log_lam_mat.T, ridge_weights[:, i], label=label_name)
+        # ax.legend("w"+str(i))
     # ax.plot(ridge_weights)
-    ax.set_xlim(-10, 20)
-    ax.set_ylim(-1.0, 2.5)
-    ax.set_xlabel(r'log($\lambda$)')
-    ax.set_ylabel("w")
-
+    plt.xlim((-10, 20))
+    plt.ylim((-1.0, 2.5))
+    plt.xlabel(r'log($\lambda$)')
+    plt.ylabel('w')
+    # 显示图例
+    plt.legend(loc='upper right')
+    plt.grid(True)
     # ax = fig.add_subplot(122)
     # ax.plot(ridge_weights)
-    plt.show()
+    fig.show()
 
 
 def run_abalone():
