@@ -150,6 +150,52 @@ def ridge_test(x_arr, y_arr):
     return w_mat, log_lam_mat
 
 
+def stage_wise(x_arr, y_arr, eps=0.01, num_iter=100):
+    """
+    forward stagewise regression算法（前向梯度算法）
+    是一种近似的 lasso算法
+    :param x_arr:
+    :param y_arr:
+    :param eps:每次特征权重的变化步长
+    :param num_iter: 迭代次数
+    :return:
+    """
+    x_mat = np.mat(x_arr)
+    y_mat = np.mat(y_arr).T
+    y_mean = np.mean(y_mat, 0)
+    y_mat = y_mat - y_mean
+    x_mean = np.mean(x_mat, 0)
+    x_var = np.var(x_mat, 0)
+    x_mat = (x_mat - x_mean) / x_var
+    m, n = np.shape(x_mat)
+    ws = np.zeros((n, 1))
+    ws_best = ws.copy()
+    return_mat = np.zeros((num_iter, n))  # 保存每次迭代最好的权重值
+    for i in range(num_iter):
+        # print(ws.T)
+        lowest_error = np.inf
+        for j in range(n):
+            for sign in [-1, 1]:
+                ws_test = ws.copy()
+                ws_test[j] += eps * sign
+                y_test = x_mat * ws_test
+                rss_err = rss_error(y_mat.A, y_test.A)  # 将矩阵转为数组
+                if rss_err < lowest_error:
+                    lowest_error = rss_err
+                    ws_best = ws_test
+        ws = ws_best.copy()
+        return_mat[i, :] = ws.T
+    return return_mat
+
+
+def run_stage():
+    x_arr, y_arr = load_data_set('./data/abalone.txt')
+    all_w_001 = stage_wise(x_arr, y_arr, 0.001, 5000)
+    print(all_w_001)
+    all_w_01 = stage_wise(x_arr, y_arr, 0.01, 200)
+    print(all_w_01)
+
+
 def run_ridge():
     ab_x, ab_y = load_data_set('./data/abalone.txt')
     ridge_weights, log_lam_mat = ridge_test(ab_x, ab_y)
@@ -157,7 +203,7 @@ def run_ridge():
     # ax = fig.add_subplot(111)
     # 这里为了正确显示x坐标，所以进行了如下处理，也可以直接画出ridge_weights
     for i in range(np.shape(ridge_weights)[1]):
-        label_name = "w" + str(i+1)
+        label_name = "w" + str(i + 1)
         plt.plot(log_lam_mat.T, ridge_weights[:, i], label=label_name)
         # ax.legend("w"+str(i))
     # ax.plot(ridge_weights)
@@ -297,4 +343,6 @@ if __name__ == '__main__':
     # 预测鲍鱼的年龄
     # run_abalone()
     # ridge算法
-    run_ridge()
+    # run_ridge()
+    # forward stagewise regression算法
+    run_stage()
